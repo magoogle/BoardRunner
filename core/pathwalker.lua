@@ -83,11 +83,28 @@ local function try_interact(wp_pos)
     return false
 end
 
+-- Find the closest waypoint index to the player's current position.
+-- Used so that a path resumes from the nearest point instead of the start
+-- when the plugin is reloaded mid-walk.
+local function find_nearest_index(path)
+    local pp = get_player_position()
+    if not pp then return 1 end
+    local best_idx, best_dist = 1, math.huge
+    for i, wp in ipairs(path) do
+        local d = pp:dist_to_ignore_z(wp.pos)
+        if d < best_dist then
+            best_idx  = i
+            best_dist = d
+        end
+    end
+    return best_idx
+end
+
 function M.start(points, name)
     if not points or #points == 0 then return false end
     M.current_path           = normalise(points)
     M.original_path          = M.current_path
-    M.current_waypoint_index = 1
+    M.current_waypoint_index = find_nearest_index(M.current_path)
     M.is_walking             = true
     last_move_time           = 0
     last_pos                 = nil
@@ -95,7 +112,8 @@ function M.start(points, name)
     stuck_timer              = 0
     interacting              = false
     interact_start           = 0
-    console.print(string.format("[BoardRunner] Walking: %s (%d pts)", name or "path", #M.current_path))
+    console.print(string.format("[BoardRunner] Walking: %s (%d pts, starting at %d)",
+        name or "path", #M.current_path, M.current_waypoint_index))
     return true
 end
 

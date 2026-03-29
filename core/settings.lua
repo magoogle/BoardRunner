@@ -5,8 +5,6 @@
 local gui      = require "gui"
 local settings = {
     enabled          = false,
-    claims_per_visit = 5,      -- how many board claims before going to vendor
-    min_free_slots   = 3,      -- stop claiming if fewer than this many slots free
     sell_rares       = true,
     salvage_magic    = true,
     salvage_normal   = true,
@@ -18,8 +16,6 @@ local settings = {
 
 function settings:update_settings()
     settings.enabled          = gui.elements.main_toggle:get()
-    settings.claims_per_visit = gui.elements.claims_per_visit:get()
-    settings.min_free_slots   = gui.elements.min_free_slots:get()
     settings.sell_rares       = gui.elements.sell_rares:get()
     settings.salvage_magic    = gui.elements.salvage_magic:get()
     settings.salvage_normal   = gui.elements.salvage_normal:get()

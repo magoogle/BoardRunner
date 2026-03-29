@@ -4,11 +4,10 @@
 --  Salvages magic/normal items at the Gea Kul blacksmith.
 -- ============================================================
 
-local settings = require "core.settings"
-local tracker  = require "core.tracker"
-local utils    = require "core.utils"
-
-local SALVAGE_SKIN  = "TWN_Kehj_GeaKul_Crafter_Blacksmith"
+local settings      = require "core.settings"
+local tracker       = require "core.tracker"
+local utils         = require "core.utils"
+local season_config = require "core.season_config"
 local INTERACT_DIST = 4.0
 
 local STATE = { IDLE="IDLE", WALK_TO="WALK_TO", OPEN="OPEN", SALVAGING="SALVAGING" }
@@ -49,7 +48,7 @@ end
 
 
 local function find_blacksmith()
-    return utils.find_actor(SALVAGE_SKIN, 20.0, true)
+    return utils.find_actor(season_config.blacksmith_skin, 20.0, true)
 end
 
 local function should_salvage(item)

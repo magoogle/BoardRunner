@@ -1,5 +1,5 @@
 -- ============================================================
---  BoardRunner  v1.0  by Magoogle
+--  BoardRunner  v1.1  by Magoogle
 --
 --  Opens Season Quest Board rewards, loots, sells/salvages,
 --  and repeats until the board is empty or inventory is full.
@@ -29,7 +29,7 @@ local function on_enable()
     if (get_time_since_inject() - enable_time) < 0.5 then return false end
 
     console.print("=============================================")
-    console.print("  BoardRunner  v1.0  by Magoogle  - STARTING")
+    console.print("  BoardRunner  v1.1  by Magoogle  - STARTING")
     console.print("=============================================")
 
     settings:update_settings()
@@ -87,6 +87,6 @@ end)
 on_render_menu(gui.render)
 
 console.print("=============================================")
-console.print("  BoardRunner  v1.0  by Magoogle  - Loaded")
+console.print("  BoardRunner  v1.1  by Magoogle  - Loaded")
 console.print("  Enable in menu to start")
 console.print("=============================================")

@@ -24,11 +24,6 @@ gui.elements = {
     board_click_x   = sf(0.0, 1.0, 0.5,  "bcx"),
     board_click_y   = sf(0.0, 1.0, 0.4,  "bcy"),
 
-    -- Claiming settings
-    claim_tree         = tree_node:new(2),
-    claims_per_visit   = si(1, 50, 5,  "cpv"),
-    min_free_slots     = si(1, 20, 3,  "mfs"),
-
     -- Loot handling
     loot_tree         = tree_node:new(3),
     sell_rares        = cb(true,  "sell_rares"),
@@ -39,7 +34,7 @@ gui.elements = {
 }
 
 function gui.render()
-    if not gui.elements.main_tree:push("BoardRunner  v1.0  by Magoogle") then return end
+    if not gui.elements.main_tree:push("BoardRunner  v1.1  by Magoogle") then return end
 
     gui.elements.main_toggle:render("Enable", "Start / stop BoardRunner")
 
@@ -51,15 +46,6 @@ function gui.render()
             "Vertical position of the reward claim button.\n0 = top, 1 = bottom.", 2)
 
         gui.elements.align_tree:pop()
-    end
-
-    -- ---- Claiming Settings ----
-    if gui.elements.claim_tree:push("Claiming") then
-        gui.elements.claims_per_visit:render("Claims per vendor visit",
-            "How many rewards to claim before walking to vendor to sell/salvage.")
-        gui.elements.min_free_slots:render("Min free inventory slots",
-            "Stop claiming when fewer than this many slots are free.")
-        gui.elements.claim_tree:pop()
     end
 
     -- ---- Loot Handling ----

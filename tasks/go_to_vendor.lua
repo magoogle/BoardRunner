@@ -3,7 +3,6 @@
 --  Walks the returntovendor path to reach seller/salvager.
 -- ============================================================
 
-local settings   = require "core.settings"
 local tracker    = require "core.tracker"
 local utils      = require "core.utils"
 local pathwalker = require "core.pathwalker"

@@ -1,23 +1,35 @@
 -- ============================================================
 --  BoardRunner - tasks/open_caches.lua
 --
---  Opens cache items in small batches so the resulting loot can
---  be sold/salvaged between batches (prevents inventory lockups).
---
---  Cache identification: item display/name contains "Cache"
---  Example: 'Greater Bloodied Cache {icon:AttributeBullet_GreaterAffix,1.5}'
+--  Opens cache items in batches of 5, then waits for the
+--  external loot plugin to pick up the drops. Monitors
+--  inventory and transitions to sell/salvage when full.
+--  Repeats until all caches are consumed.
 -- ============================================================
 
-local tracker  = require "core.tracker"
+local tracker = require "core.tracker"
+local utils   = require "core.utils"
 
-local STATE = { IDLE="IDLE", OPENING="OPENING" }
-local s = { state=STATE.IDLE, last_open=-999, opened_in_batch=0 }
+local STATE = {
+    IDLE          = "IDLE",
+    OPENING       = "OPENING",
+    WAIT_LOOT     = "WAIT_LOOT",    -- pause for loot plugin to pick up drops
+}
 
-local OPEN_INTERVAL = 0.6
-local BATCH_SIZE    = 5
+local s = {
+    state           = STATE.IDLE,
+    last_open       = -999,
+    opened_in_batch = 0,
+    wait_start      = 0,
+}
+
+local OPEN_INTERVAL  = 0.6   -- delay between opening individual caches
+local BATCH_SIZE     = 5     -- open 5 caches per batch
+local LOOT_WAIT      = 3.0   -- seconds to let loot plugin pick up items
+local LOOT_CHECK_INT = 0.5   -- how often to re-check inventory during wait
 
 local function now() return get_time_since_inject() end
-local function set_state(x) s.state=x end
+local function set_state(x) s.state = x end
 
 local function safe(fn)
     local ok, v = pcall(fn)
@@ -43,7 +55,7 @@ local function get_cache_items()
     local caches = {}
     for _, item in pairs(items) do
         if is_cache(item) then
-            caches[#caches+1] = item
+            caches[#caches + 1] = item
         end
     end
     return caches
@@ -73,9 +85,13 @@ function task.shouldExecute()
 end
 
 function task.Execute()
+    -- ----------------------------------------------------------------
+    -- IDLE: check if there are caches to open; if not, move to sell
+    -- ----------------------------------------------------------------
     if s.state == STATE.IDLE then
         local caches = get_cache_items()
         if #caches == 0 then
+            console.print("[BoardRunner] No caches remaining — moving to sell phase.")
             tracker.loot_phase = "sell"
             return
         end
@@ -86,30 +102,35 @@ function task.Execute()
         return
     end
 
+    -- ----------------------------------------------------------------
+    -- OPENING: open caches one at a time up to BATCH_SIZE (5)
+    -- ----------------------------------------------------------------
     if s.state == STATE.OPENING then
         if (now() - s.last_open) < OPEN_INTERVAL then return end
 
+        -- Batch complete → wait for loot plugin
         if s.opened_in_batch >= BATCH_SIZE then
-            console.print(string.format("[BoardRunner] Opened %d cache(s) this batch — processing loot.", s.opened_in_batch))
-            tracker.loot_phase = "sell"
-            set_state(STATE.IDLE)
+            console.print(string.format("[BoardRunner] Opened %d cache(s) — waiting for loot plugin.", s.opened_in_batch))
+            s.wait_start = now()
+            set_state(STATE.WAIT_LOOT)
             return
         end
 
         local caches = get_cache_items()
         if #caches == 0 then
-            console.print("[BoardRunner] No more caches remaining.")
-            tracker.loot_phase = "sell"
-            set_state(STATE.IDLE)
+            console.print("[BoardRunner] All caches opened — waiting for loot plugin.")
+            s.wait_start = now()
+            set_state(STATE.WAIT_LOOT)
             return
         end
 
-        local item = caches[1]
+        local item  = caches[1]
         local label = item_label(item)
         local ok, err = open_cache(item)
         if ok then
             s.opened_in_batch = s.opened_in_batch + 1
-            console.print(string.format("[BoardRunner] Opened cache: %s", tostring(label)))
+            console.print(string.format("[BoardRunner] Opened cache: %s (%d/%d)",
+                tostring(label), s.opened_in_batch, BATCH_SIZE))
         else
             console.print(string.format("[BoardRunner] Failed to open cache: %s (%s)", tostring(label), tostring(err)))
             tracker.loot_phase = "sell"
@@ -118,6 +139,41 @@ function task.Execute()
         end
 
         s.last_open = now()
+        return
+    end
+
+    -- ----------------------------------------------------------------
+    -- WAIT_LOOT: give the external loot plugin time to pick up drops,
+    -- then check inventory. If full → sell/salvage; else open more.
+    -- ----------------------------------------------------------------
+    if s.state == STATE.WAIT_LOOT then
+        local elapsed = now() - s.wait_start
+        if elapsed < LOOT_WAIT then return end  -- still waiting
+
+        local free   = utils.free_inventory_slots()
+        local caches = get_cache_items()
+
+        if free <= 0 then
+            -- Inventory full — go sell/salvage before opening more
+            console.print("[BoardRunner] Inventory full after opening caches — selling/salvaging.")
+            tracker.loot_phase = "sell"
+            set_state(STATE.IDLE)
+            return
+        end
+
+        if #caches == 0 then
+            -- All caches consumed — sell any remaining loot then return to board
+            console.print("[BoardRunner] All caches opened and looted — moving to sell phase.")
+            tracker.loot_phase = "sell"
+            set_state(STATE.IDLE)
+            return
+        end
+
+        -- More caches remain and we have space — open another batch
+        console.print(string.format("[BoardRunner] %d cache(s) remain, %d free slots — opening next batch.",
+            #caches, free))
+        s.opened_in_batch = 0
+        set_state(STATE.OPENING)
         return
     end
 end

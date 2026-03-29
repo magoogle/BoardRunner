@@ -37,8 +37,8 @@ end
 local task_files = {
     "go_to_board",
     "claim_rewards",
+    "go_to_vendor",       -- walk to vendor area first (needed before open/sell/salvage)
     "open_caches",
-    "go_to_vendor",
     "sell_loot",
     "salvage_loot",
     "return_to_board",

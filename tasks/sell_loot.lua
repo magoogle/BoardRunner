@@ -5,11 +5,10 @@
 --  Uses loot_manager.sell_item — same as Alfred's approach.
 -- ============================================================
 
-local settings = require "core.settings"
-local tracker  = require "core.tracker"
-local utils    = require "core.utils"
-
-local VENDOR_SKIN   = "TWN_Kehj_GeaKul_Vendor_Gambler"
+local settings      = require "core.settings"
+local tracker       = require "core.tracker"
+local utils         = require "core.utils"
+local season_config = require "core.season_config"
 local INTERACT_DIST = 4.0
 
 local STATE = { IDLE="IDLE", WALK_TO="WALK_TO", OPEN="OPEN", SELLING="SELLING" }
@@ -21,7 +20,7 @@ local function now()        return get_time_since_inject() end
 local function set_state(x) s.state=x; s.t=now() end
 
 local function find_vendor()
-    return utils.find_actor(VENDOR_SKIN, 20.0, true)
+    return utils.find_actor(season_config.vendor_skin, 20.0, true)
 end
 
 local function should_sell(item)

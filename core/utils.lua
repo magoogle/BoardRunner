@@ -2,21 +2,19 @@
 --  BoardRunner - core/utils.lua
 -- ============================================================
 
-local utils = {}
+local utils         = {}
+local season_config = require "core.season_config"
 
-local GEA_KUL_WP   = 0xB66AB
-local GEA_KUL_ZONE = "Kehj_Gea_Kul"
-
-function utils.in_gea_kul()
+function utils.in_season_town()
     local ok, zone = pcall(function()
         return get_current_world():get_current_zone_name()
     end)
     if not ok then return false end
-    return zone and zone:find(GEA_KUL_ZONE) ~= nil
+    return zone and zone:find(season_config.zone_pattern) ~= nil
 end
 
-function utils.teleport_to_gea_kul()
-    teleport_to_waypoint(GEA_KUL_WP)
+function utils.teleport_to_town()
+    teleport_to_waypoint(season_config.waypoint_hash)
 end
 
 function utils.distance_to(target)
