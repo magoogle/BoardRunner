@@ -79,6 +79,13 @@ end
 
 local task = { name = "Open Caches" }
 
+function task.reset()
+    s.state           = STATE.IDLE
+    s.last_open       = -999
+    s.opened_in_batch = 0
+    s.wait_start      = 0
+end
+
 function task.shouldExecute()
     if s.state ~= STATE.IDLE then return true end
     return tracker.at_vendor and tracker.loot_phase == "open_caches"

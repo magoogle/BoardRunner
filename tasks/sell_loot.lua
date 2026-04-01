@@ -47,6 +47,12 @@ end
 
 local task = { name = "Sell Loot" }
 
+function task.reset()
+    s.state     = STATE.IDLE
+    s.t         = -999
+    s.last_sell = -999
+end
+
 function task.shouldExecute()
     if s.state ~= STATE.IDLE then return true end
     return tracker.at_vendor and tracker.loot_phase == "sell"

@@ -16,6 +16,12 @@ local function set_state(x) s.state=x; s.t=now() end
 
 local task = { name = "Go To Vendor" }
 
+function task.reset()
+    s.state = STATE.IDLE
+    s.t     = -999
+    pathwalker.stop()
+end
+
 function task.shouldExecute()
 if s.state ~= STATE.IDLE then return true end
 if tracker.at_vendor then return false end

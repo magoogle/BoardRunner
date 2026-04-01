@@ -34,6 +34,16 @@ function task_manager.get_current_task()
     return current_task
 end
 
+function task_manager.reset_all_tasks()
+    current_task   = { name = "Idle" }
+    last_call_time = 0.0
+    for _, task in ipairs(tasks) do
+        if type(task.reset) == "function" then
+            pcall(task.reset)
+        end
+    end
+end
+
 local task_files = {
     "go_to_board",
     "claim_rewards",

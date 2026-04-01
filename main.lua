@@ -34,10 +34,13 @@ local function on_enable()
 
     settings:update_settings()
     tracker.reset()
+    task_manager.reset_all_tasks()
     return true
 end
 
 local function on_disable()
+    task_manager.reset_all_tasks()
+    tracker.reset()
     console.print("[BoardRunner] Stopped.")
     console.print(string.format("[BoardRunner] Total board claims this session: %d", tracker.total_claims))
 end
