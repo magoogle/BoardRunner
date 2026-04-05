@@ -45,7 +45,34 @@ local function on_disable()
     console.print(string.format("[BoardRunner] Total board claims this session: %d", tracker.total_claims))
 end
 
+local utils         = require "core.utils"
+local season_config = require "core.season_config"
+
+local function debug_test_interact()
+    if not (gui.elements.debug_interact and gui.elements.debug_interact:get()) then return end
+    gui.elements.debug_interact:set(false)
+
+    console.print("[BoardRunner][DEBUG] --- Board Interact Test ---")
+    local board = utils.find_actor(season_config.board_actor, 20.0, false)
+    if not board then
+        console.print("[BoardRunner][DEBUG] Board actor NOT found within 20 yds.")
+        return
+    end
+
+    local dist = utils.distance_to(board)
+    console.print(string.format("[BoardRunner][DEBUG] Board found: %.1f yds away.", dist))
+
+    local ok1 = interact_vendor(board)
+    console.print(string.format("[BoardRunner][DEBUG] interact_vendor  -> %s", tostring(ok1)))
+
+    local ok2 = interact_object(board)
+    console.print(string.format("[BoardRunner][DEBUG] interact_object  -> %s", tostring(ok2)))
+
+    console.print("[BoardRunner][DEBUG] --- Test complete ---")
+end
+
 on_update(function()
+    debug_test_interact()
     settings:update_settings()
     local enabled = settings.enabled
 

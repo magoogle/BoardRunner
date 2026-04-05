@@ -18,6 +18,7 @@ end
 gui.elements = {
     main_tree   = tree_node:new(0),
     main_toggle = cb(false, "enabled"),
+    debug_interact = cb(false, "debug_interact"),  -- temp: fire board interact on demand
 
     -- Board click position (relative 0-1 for any resolution)
     align_tree      = tree_node:new(1),
@@ -37,6 +38,7 @@ function gui.render()
     if not gui.elements.main_tree:push("BoardRunner  v1.1  by Magoogle") then return end
 
     gui.elements.main_toggle:render("Enable", "Start / stop BoardRunner")
+    gui.elements.debug_interact:render("[DEBUG] Test Board Interact", "Immediately tries interact_vendor + interact_object on the nearest board actor and prints results to console.")
 
     -- ---- Board Click Alignment ----
     if gui.elements.align_tree:push("Board Click Alignment") then
